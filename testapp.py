@@ -11,41 +11,26 @@ tk.title("Totally Iluminate")
 tk.wm_attributes("-topmost",1)
 canvas = Canvas(tk, width = 800, height = 500,background = "white", highlightthickness = 5, highlightbackground = "black")
 canvas.pack()
-def enteraccount(self):
-    global Done
-    global testrecord
-    Done = False
-    canvas.bind_all("<Button-1>",detectmouse)
+def enteraccount():
+    global activeaccount
+    #canvas.bind_all("<Button-1>",detectmouse)
     canvas.delete("all")
-    username4.place_forget()
-    password4.place_forget()
-    EnterLogin.place_forget()
-    Create_Account.place_forget()
-    Teacher.place_forget()
-    Student.place_forget()
-    UploadImage.place(x = 130,y = 370)
-    EnterCode.place(x = 450,y = 400)
-    code.place(x = 400,y = 400)
-    if self.teacher == True:
-        MakeTestButton.place(x = 550,y = 300)
-    viewtest(self)
-    canvas.create_text(200,100,text = "Welcome %s" % self.name, font = ("Courier", 20))
+    removeallbuttons()
+    profilepicture.place(x = 130,y = 370)
+    entercode.place(x = 180,y = 340)
+    confirmcode.place(x = 220,y = 340)
+    Logout.place(x = 700, y = 450)
+    #if self.teacher == True:
+    #   MakeTestButton.place(x = 550,y = 300)
+    y = 200
+    for count in range(0,len(activeaccount.test)):
+        canvas.create_text(500,y,text = "%s" % activeaccount.test[count].name, font = ("Courier", 12))
+        canvas.create_text(600,y,text = "%s" % activeaccount.test[count].grade, font = ("Courier", 12))
+        y = y +20
+    canvas.create_text(200,100,text = "Welcome %s" % activeaccount.id, font = ("Courier", 20))
     canvas.create_text(435,380,text = "Enter A Code", font = ("Courier", 20))
     canvas.create_text(580,100, text = "Your Recent Tests",font = ("Courier", 20))
     canvas.create_rectangle(100,150,300,350, fill = "grey")
-    cd.place(x = 600,y = 350)
-    while 1:
-        if (Done == True) and (len(canvas.find_withtag("selected")) == 1):
-            current = canvas.find_withtag("selected")[0]
-            real2 = canvas.gettags(current)[0]
-            real =  testrecord[real2]
-            canvas.unbind_all("<Button-1>")
-            take_test(real)
-            break
-        else:
-            Done == False
-        tk.update()
-        tk.update_idletasks()
 
 def receiveresponse(answer):
     global results 
@@ -59,13 +44,7 @@ def receiveresponse(answer):
     
 def grade_test(self):
     pass
-        
-
-
-
-        
-class accounts():
-    pass
+            
 
 def openimage():
     path=askopenfilename(filetypes=[("Image File",'.png')])
@@ -73,7 +52,6 @@ def openimage():
     label = Label(canvas, image=tkimage)
     label.image = tkimage # keep a reference!
     label.place(x = 100, y = 150)
-
 
 
 def choose_students(self):
@@ -111,27 +89,61 @@ def choose_students(self):
     canvas.unbind_all("<Button-1>")
     setup()             
     
+#Classes
+class Account():
+    def __init__(self,accounttype):
+        global accountid
+        accountid = accountid + 1
+        self.id = accountid
+        self.type = accounttype
+        self.active = True  #Set to false when fully functional
+        self.test = []
+        self.username = username.get()
+        self.password = password.get()
+        accounts.append(self)
+
+    def __str__(self):
+        return self.id
         
-def viewtest(self):
-    length = len(self.tests)
-    if length > 10:
-        length = 10
-    y = 200
-    for blah in range(0,length):
-        canvas.create_text(500,y,text = "%s" % self.tests[blah], font = ("Courier", 12), tags = str(self.tests[blah]))
-        y = y +20
-def Createaccount():
+class Student(Account):
+    pass
+class Teacher(Account):
+    pass
+class Admin(Account):
     pass
 #Variables
+accountid = 0
 accounts = []
 tests = []
 activeaccount = None
+activetest = None
 #Basic Functions
 scroll = Scrollbar(canvas, orient=VERTICAL)
 scroll.config(command=canvas.yview)
 canvas.config(yscrollcommand=scroll.set)
 scroll.place(x = 795, y = 5)
+def createaccount():
+    canvas.delete("all")
+    removeallbuttons()
+    username.place(x = 570, y = 350)
+    password.place(x = 570, y = 400)
+    Confirmaccount.place(x = 570, y = 440)
+    teacher.place(x = 450,y = 350)
+    student.place(x = 450,y = 400)
+
+def confirmaccount():
+    if (len(username.get()) > 0) and (len(password.get()) > 0):
+        newaccount = Account(selection.get())
+        setup()
+        
+def logout():
+    global activeaccount
+    activeaccount = None
+    canvas.delete("all")
+    setup()
+    
 def checklogin():
+    global activeaccount
     ReceiveUsername = username.get()
     ReceivePassword = password.get()
     for count in range(0,len(accounts)):
@@ -141,37 +153,43 @@ def checklogin():
             enteraccount()
             return True
     canvas.create_text(640,450,text = "Login Invalid", font = ("Courier", 12), fill = "red")
-    return False
 
 def checkcode():    
     ReceiveCode = entercode.get()
     for count in range(0,len(tests)):
         currenttest = tests[count]
         if (currenttest.code == ReceiveCode):
+            activetest = tests[count]
             entertest(tests[count])
             return True
-    canvas.create_text(640,450,text = "Code Invalid", font = ("Courier", 12), fill = "red")
-    return False
-
-
+    canvas.create_text(640,450,text = "Invalid Code", font = ("Courier", 12), fill = "red")
     
-def buttonreload(topost = None):
-    pass
-
+def removeallbuttons():
+    username.place_forget()
+    password.place_forget()
+    entercode.place_forget()
+    confirmlogin.place_forget()
+    confirmcode.place_forget()
+    Createaccount.place_forget()
+    Confirmaccount.place_forget()
+    teacher.place_forget()
+    student.place_forget()
+    profilepicture.place_forget()
+    Logout.place_forget()
+    
 def setup():
-    canvas.create_text(400,150,text = "Welcome To Under\nConstruction Online Testing\nlel", font = ("Courier", 30))
+    canvas.create_text(400,150,text = "Welcome To Under\nConstruction Online Testing", font = ("Courier", 30))
     canvas.create_text(350,320,text = "Put In A Code        Or        Sign In", font = ("Courier", 20))
     canvas.create_text(515, 360, text= "Username:", font = ("Helvetica", 12))
     canvas.create_text(515, 410, text= "Password:", font = ("Helvetica", 12))
-    buttonreload("login")
+    removeallbuttons()
     username.place(x = 570, y = 350)
     password.place(x = 570, y = 400)
     entercode.place(x = 180,y = 340)
     confirmlogin.place(x = 690,y = 395)
     confirmcode.place(x = 220,y = 340)
-    createaccount.place(x = 400,y = 450)
-
-    
+    Createaccount.place(x = 400,y = 450)
+   
 def detectmouse(event):
     try:
         if event.widget.find_withtag("current"):
@@ -187,9 +205,13 @@ password = Entry(canvas,width = 18)
 entercode = Entry(canvas,width = 10)
 confirmlogin = Button(tk, text = "Login", command = checklogin)
 confirmcode = Button(tk, text = "Enter", command = checkcode)
-createaccount = Button(tk, text = "Create Account", command = Createaccount)
-
-
+Createaccount = Button(tk, text = "Create Account", command = createaccount)
+Confirmaccount = Button(tk, text = "Create Account", command = confirmaccount)
+selection = StringVar()  #For Creating Account Type
+teacher = Radiobutton(canvas, text = "Teacher", variable = selection, value = 0) #For Creating Account Type
+student = Radiobutton(canvas, text = "Student", variable = selection, value = 1) #For Creating Account Type
+profilepicture = Button(tk, text = "Update Photo", command = openimage)
+Logout = Button(tk, text = "Logout", command = logout)
 
 
 
